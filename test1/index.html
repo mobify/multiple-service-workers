@@ -5,6 +5,7 @@
     <title id="title-element">path</title>
 </head>
 <body>
+    <h1 id="header-element">path</h1>
     <p>
         <i>
             Two service workers, both alike in dignity<br/>
@@ -13,25 +14,64 @@
     </p>
     <script>
         // Set the page title so we can tell which page we're looking at
-        document.getElementById('title-element').innerText = document.location
+        for (let element_id of ['title-element', 'header-element']) {
+            document.getElementById(element_id).innerText = document.location.pathname;
+        }
 
         var registration = null;
+        navigator.serviceWorker.getRegistration(
+            document.location
+        ).then(
+            function(reg) {
+                if (!reg) {
+                    console.log(
+                        'This page is not controlled by a service worker'
+                    );
+                }
+                // We have to check the registration. If this is the subpath page
+                // and the top-level worker is registered but the subpath one is
+                // not, then we'll get the registration for the top-level
+                // worker (because it controls the subpath also).
+                // Make sure we compare the scope and location as strings.
+                else if (''+reg.scope === ''+document.location) {
+                    console.log(
+                            'Service worker is registered at ' +
+                            reg.scope
+                    );
+                    registration = reg;
+                } else {
+                    console.log(
+                        'This page controlled by a worker at ' + reg.scope
+                    )
+                }
+            }
+        ).catch(
+            function(error) {
+                console.log(
+                    'Could not check for service worker registration, error ' + error
+                )
+            }
+        );
 
         let register = function() {
-            navigator.serviceWorker.register(
-                    'worker.js'
-            ).then(function(reg) {
-                // registration worked
-                console.log(
-                        'Registered service worker at scope ' + reg.scope
-                );
-                registration = reg;
-            }).catch(function(error) {
-                // registration failed
-                console.log(
-                        'Registration of service worker failed with ' + error
-                );
-            });
+            if (!registration) {
+                navigator.serviceWorker.register(
+                    document.location.pathname + 'worker.js'
+                ).then(function(reg) {
+                    // registration worked
+                    console.log(
+                            'Registered service worker at scope ' + reg.scope
+                    );
+                    registration = reg;
+                }).catch(function(error) {
+                    // registration failed
+                    console.log(
+                            'Registration of service worker failed with ' + error
+                    );
+                });
+            } else {
+                console.log('Worker is already registered');
+            }
         };
 
         let unregister = function() {
@@ -51,52 +91,72 @@
                         )
                     }
                 )
+            } else {
+                console.log('Worker is not registered');
             }
         };
 
         let subscribe = function() {
             if (!registration) {
+                console.log('Worker is not registered - cannot subscribe');
                 return;
             }
-            var subscription = registration.pushManager.getSubscription();
-            if (!subscription) {
-                registration.pushManager.subscribe().then(
-                    function(sub) {
-                        console.log(
-                            'Subscribed worker at ' + reg.scope
+            registration.pushManager.getSubscription().then(
+                function(subscription) {
+                    if (!subscription) {
+                        registration.pushManager.subscribe(
+                            {userVisibleOnly: true}
+                        ).then(
+                                function(sub) {
+                                    console.log(
+                                            'Subscribed worker at ' + registration.scope
+                                    )
+                                }
+                        ).catch(
+                                function(error) {
+                                    console.log(
+                                            'Failed to subscribe worker at ' + registration.scope +
+                                            ', error ' + error
+                                    )
+                                }
                         )
-                    }
-                ).catch(
-                    function(error) {
+                    } else {
                         console.log(
-                            'Failed to subscribe worker at ' + reg.scope +
-                            ', error ' + error
-                        )
+                                'Worker is already subscribed with subscription id ' +
+                                subscription.endpoint
+                        );
                     }
-                )
-            }
+                }
+            );
         };
 
         let unsubscribe = function() {
             if (registration) {
-                let subscription = reg.pushManager.getSubscription();
-                if (subscription) {
-                    subscription.unsubscribe().then(
-                        function(unsubscribed) {
-                            console.log(
-                                'Unsubscribe of worker at ' + reg.scope +
-                                ' returned ' + unsubscribed
+                registration.pushManager.getSubscription().then(
+                    function(subscription) {
+                        if (subscription) {
+                            subscription.unsubscribe().then(
+                                function(unsubscribed) {
+                                    console.log(
+                                        'Unsubscribe of worker at ' + registration.scope +
+                                        ' returned ' + unsubscribed
+                                    )
+                                }
+                            ).catch(
+                                function(error) {
+                                    console.log(
+                                        'Could not unsubscribe worker at ' + registration.scope +
+                                        ', error ' + error
+                                    )
+                                }
                             )
+                        } else {
+                            console.log('Worker is not subscribed');
                         }
-                    ).catch(
-                        function(error) {
-                            console.log(
-                                'Could not unsubscribe worker at ' + reg.scope +
-                                ', error ' + error
-                            )
-                        }
-                    )
-                }
+                    }
+                );
+            } else {
+                console.log('Worker is not registered');
             }
         };
 

@@ -28,7 +28,9 @@ self.addEventListener(
     function(event) {
         console.log(
             WORKER + ' fetch event for ' + event.request.url
-        )
+        );
+        // Let the event fall through so that the resource is fetched
+        // as normal.
     }
 );
 
