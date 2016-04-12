@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title id="title-element">path</title>
+</head>
+<body>
+    <p>
+        <i>
+            Two service workers, both alike in dignity<br/>
+            In fair Verona, where we lay our scene...
+        </i>
+    </p>
+    <script>
+        // Set the page title so we can tell which page we're looking at
+        document.getElementById('title-element').innerText = document.location
+
+        var registration = null;
+
+        let register = function() {
+            navigator.serviceWorker.register(
+                    'worker.js'
+            ).then(function(reg) {
+                // registration worked
+                console.log(
+                        'Registered service worker at scope ' + reg.scope
+                );
+                registration = reg;
+            }).catch(function(error) {
+                // registration failed
+                console.log(
+                        'Registration of service worker failed with ' + error
+                );
+            });
+        };
+
+        let unregister = function() {
+            if (registration) {
+                registration.unregister().then(
+                    function() {
+                        console.log(
+                            'Unregistered service worker at ' + registration.scope
+                        );
+                        registration = null;
+                    }
+                ).catch(
+                    function(error) {
+                        console.log(
+                            'Failed to unregister service worker at ' + registration.scope +
+                            ', error ' + error
+                        )
+                    }
+                )
+            }
+        };
+
+        let subscribe = function() {
+            if (!registration) {
+                return;
+            }
+            var subscription = registration.pushManager.getSubscription();
+            if (!subscription) {
+                registration.pushManager.subscribe().then(
+                    function(sub) {
+                        console.log(
+                            'Subscribed worker at ' + reg.scope
+                        )
+                    }
+                ).catch(
+                    function(error) {
+                        console.log(
+                            'Failed to subscribe worker at ' + reg.scope +
+                            ', error ' + error
+                        )
+                    }
+                )
+            }
+        };
+
+        let unsubscribe = function() {
+            if (registration) {
+                let subscription = reg.pushManager.getSubscription();
+                if (subscription) {
+                    subscription.unsubscribe().then(
+                        function(unsubscribed) {
+                            console.log(
+                                'Unsubscribe of worker at ' + reg.scope +
+                                ' returned ' + unsubscribed
+                            )
+                        }
+                    ).catch(
+                        function(error) {
+                            console.log(
+                                'Could not unsubscribe worker at ' + reg.scope +
+                                ', error ' + error
+                            )
+                        }
+                    )
+                }
+            }
+        };
+
+        let fetch = function() {
+            let fetched = document.getElementById('fetched');
+            let image = document.createElement('img');
+            image.setAttribute('src', 'mobify.png');
+            fetched.appendChild(image);
+        }
+
+    </script>
+
+    <ul>
+        <li><a onclick="register()">register</a></li>
+        <li><a onclick="unregister()">unregister</a></li>
+        <li><a onclick="fetch()">fetch</a></li>
+        <li><a onclick="subscribe()">subscribe</a></li>
+        <li><a onclick="unsubscribe()">unsubscribe</a></li>
+    </ul>
+
+    <div id="fetched"></div>
+
+</body>
+</html>
