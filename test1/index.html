@@ -104,21 +104,40 @@
             registration.pushManager.getSubscription().then(
                 function(subscription) {
                     if (!subscription) {
+
+                        // Add the manifest link
+                        let manifest_link = document.getElementById('manifest-link');
+                        if (!manifest_link) {
+                            console.log('Adding manifest link');
+                            let link = document.createElement('link');
+                            link.setAttribute('id', 'manifest-link');
+                            link.setAttribute('rel', 'manifest');
+                            link.setAttribute(
+                                'href',
+                                document.location.pathname + 'manifest.json'
+                            );
+                            let head = document.getElementsByTagName('head')[0];
+                            head.appendChild(link);
+                        } else {
+                            console.log('Manifest link already present');
+                        }
+
                         registration.pushManager.subscribe(
                             {userVisibleOnly: true}
                         ).then(
-                                function(sub) {
-                                    console.log(
-                                            'Subscribed worker at ' + registration.scope
-                                    )
-                                }
+                            function(sub) {
+                                console.log(
+                                    'Subscribed worker at ' + registration.scope +
+                                    ' with subscription ' + sub.endpoint
+                                )
+                            }
                         ).catch(
-                                function(error) {
-                                    console.log(
-                                            'Failed to subscribe worker at ' + registration.scope +
-                                            ', error ' + error
-                                    )
-                                }
+                            function(error) {
+                                console.log(
+                                        'Failed to subscribe worker at ' + registration.scope +
+                                        ', error ' + error
+                                )
+                            }
                         )
                     } else {
                         console.log(

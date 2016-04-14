@@ -1,7 +1,7 @@
 /**
  * Created by benlast on 2016-04-12.
  */
-"use strict";
+'use strict';
 
 self.addEventListener(
     'activate',
@@ -38,7 +38,7 @@ self.addEventListener(
     'push',
     function(event) {
         console.log(
-            WORKER + 'push event'
+            WORKER + ' push event'
         )
     }
 );
