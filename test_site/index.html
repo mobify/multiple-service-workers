@@ -179,7 +179,48 @@
             }
         };
 
-        let fetch = function() {
+        let push = function() {
+            if (registration) {
+                registration.pushManager.getSubscription().then(
+                    function(subscription) {
+                        if (subscription) {
+                            let data = {
+                                endpoint: subscription.endpoint
+                            };
+                            fetch(
+                                '/push',
+                                {
+                                    method: 'POST',
+                                    body: new Blob(
+                                        [JSON.stringify(data, null, 2)],
+                                        {type : 'application/json'}
+                                    )
+                                }
+                            ).then(
+                                function(response) {
+                                    console.log(
+                                        'Push request response ' + response
+                                    );
+                                }
+                            ).catch(
+                                function(error) {
+                                    console.log(
+                                        'Could not send push to worker at ' + registration.scope +
+                                        ', error ' + error
+                                    );
+                                }
+                            )
+                        } else {
+                            console.log('Worker is not subscribed');
+                        }
+                    }
+                );
+            } else {
+                console.log('Worker is not registered');
+            }
+        };
+
+        let fetch_image = function() {
             let fetched = document.getElementById('fetched');
             let image = document.createElement('img');
             image.setAttribute('src', 'mobify.png');
@@ -191,9 +232,10 @@
     <ul>
         <li><a onclick="register()">register</a></li>
         <li><a onclick="unregister()">unregister</a></li>
-        <li><a onclick="fetch()">fetch</a></li>
+        <li><a onclick="fetch_image()">fetch</a></li>
         <li><a onclick="subscribe()">subscribe</a></li>
         <li><a onclick="unsubscribe()">unsubscribe</a></li>
+        <li><a onclick="push()">push</a></li>
     </ul>
 
     <div id="fetched"></div>
