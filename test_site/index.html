@@ -220,10 +220,13 @@
             }
         };
 
+        var image_index = 0;
         let fetch_image = function() {
             let fetched = document.getElementById('fetched');
             let image = document.createElement('img');
-            image.setAttribute('src', 'mobify.png');
+            let name = 'mobify' + (image_index ? image_index : '') + '.png';
+            image_index = (++image_index % 10);
+            image.setAttribute('src', name);
             fetched.appendChild(image);
         }
 
