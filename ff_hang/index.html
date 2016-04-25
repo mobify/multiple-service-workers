@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title id="title-element">path</title>
+</head>
+<body>
+    <h1 id="header-element">path</h1>
+    <script>
+        // Set the page title so we can tell which page we're looking at
+        for (let element_id of ['title-element', 'header-element']) {
+            document.getElementById(element_id).innerText = document.location.pathname;
+        }
+
+        var registration = null;
+        navigator.serviceWorker.getRegistration(
+            document.location
+        ).then(
+            function(reg) {
+                if (!reg) {
+                    console.log(
+                        'This page is not controlled by a service worker'
+                    );
+                }
+                // We have to check the registration. If this is the subpath page
+                // and the top-level worker is registered but the subpath one is
+                // not, then we'll get the registration for the top-level
+                // worker (because it controls the subpath also).
+                // Make sure we compare the scope and location as strings.
+                else if (''+reg.scope === ''+document.location) {
+                    console.log(
+                            'Service worker is registered at ' +
+                            reg.scope
+                    );
+                    registration = reg;
+                } else {
+                    console.log(
+                        'This page controlled by a worker at ' + reg.scope
+                    )
+                }
+            }
+        ).catch(
+            function(error) {
+                console.log(
+                    'Could not check for service worker registration, error ' + error
+                )
+            }
+        );
+
+        let register = function() {
+            if (!registration) {
+                navigator.serviceWorker.register(
+                    document.location.pathname + 'worker.js'
+                ).then(function(reg) {
+                    // registration worked
+                    console.log(
+                            'Registered service worker at scope ' + reg.scope
+                    );
+                    registration = reg;
+                }).catch(function(error) {
+                    // registration failed
+                    console.log(
+                            'Registration of service worker failed with ' + error
+                    );
+                });
+            } else {
+                console.log('Worker is already registered');
+            }
+        };
+
+        let unregister = function() {
+            if (registration) {
+                registration.unregister().then(
+                    function() {
+                        console.log(
+                            'Unregistered service worker at ' + registration.scope
+                        );
+                        registration = null;
+                    }
+                ).catch(
+                    function(error) {
+                        console.log(
+                            'Failed to unregister service worker at ' + registration.scope +
+                            ', error ' + error
+                        )
+                    }
+                )
+            } else {
+                console.log('Worker is not registered');
+            }
+        };
+
+    </script>
+
+    <ul>
+        <li><a onclick="register()">register</a></li>
+        <li><a onclick="unregister()">unregister</a></li>
+    </ul>
+
+</body>
+</html>
