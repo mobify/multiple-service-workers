@@ -122,6 +122,7 @@
                             console.log('Manifest link already present');
                         }
 
+                        console.log('Subscribing...');
                         registration.pushManager.subscribe(
                             {userVisibleOnly: true}
                         ).then(
@@ -224,10 +225,42 @@
         let fetch_image = function() {
             let fetched = document.getElementById('fetched');
             let image = document.createElement('img');
-            let name = 'mobify' + (image_index ? image_index : '') + '.png';
+            let name = 'https://' + document.location.host + document.location.pathname + 'mobify' + (image_index ? image_index : '') + '.png';
             image_index = (++image_index % 10);
             image.setAttribute('src', name);
             fetched.appendChild(image);
+        };
+
+        var iframeElement;
+        let add_iframe = function() {
+            if (iframeElement) {
+                return;
+            }
+            let body = document.getElementsByTagName('body')[0];
+            iframeElement = document.createElement('iframe');
+            iframeElement.src = 'https://' + document.location.host.replace('-insecure', '') + document.location.pathname
+            iframeElement.frameBorder = 1;
+            iframeElement.width = body.width;
+            iframeElement.height = body.height / 2;
+            body.appendChild(iframeElement);
+        };
+
+        let check = function() {
+            fetch(
+                'https://' + document.location.host.replace('-insecure', '') + '/check.json'
+            ).then(
+                function(response) {
+                    return response.json().then(
+                        function(status) {
+                            console.log('Status: ' + JSON.stringify(status));
+                        }
+                    )
+                }
+            ).catch(
+                function(error) {
+                    console.log('Error: ' + error);
+                }
+            )
         }
 
     </script>
@@ -239,6 +272,8 @@
         <li><a onclick="subscribe()">subscribe</a></li>
         <li><a onclick="unsubscribe()">unsubscribe</a></li>
         <li><a onclick="push()">push</a></li>
+        <li><a onclick="add_iframe()">add iframe</a></li>
+        <li><a onclick="check()">check</a></li>
     </ul>
 
     <div id="fetched"></div>
