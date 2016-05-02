@@ -37,3 +37,5 @@ jspm_packages
 
 .idea/
 venv/
+common_worker_browserified.js
+

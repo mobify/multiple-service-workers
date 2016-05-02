@@ -4,12 +4,16 @@ You can run a simple Node server if you're not testing push:
 
 ```bash
 npm install
+cd 
+browserify common_worker.js > common_worker_browserified.js
 ./node_modules/.bin/http-server -c-1 test_site/
 ```
 
 ...or to test Push, get your GCM API key, and run the Python server:
 
 ```bash
+npm install
+browserify common_worker.js > common_worker_browserified.js
 virtualenv venv
 . venv/bin/activate
 env GCM_API_KEY=<your api key> ./server.py

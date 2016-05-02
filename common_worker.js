@@ -1,7 +1,9 @@
-/**
- * Created by benlast on 2016-04-12.
- */
 'use strict';
+
+var Idb = require('./thirdparty/idbstorage.js');
+
+let STORE = 'swStore';
+let KEY = 'swKey';
 
 self.addEventListener(
     'activate',
@@ -23,8 +25,21 @@ self.addEventListener(
             WORKER + ' install event - scope is ' +
             self.registration.scope
         );
+
+        var promises = [
+            self.skipWaiting(),
+            Idb.get(STORE, KEY).then(
+                function(value) {
+                    console.log(
+                        WORKER + ' got stored value ' + value
+                    );
+                    return Idb.set(STORE, KEY, WORKER);
+                }
+            )
+        ];
+
         event.waitUntil(
-            self.skipWaiting()
+            Promise.all(promises)
         );
     }
 );
